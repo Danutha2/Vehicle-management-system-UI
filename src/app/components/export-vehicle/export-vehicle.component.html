@@ -1,0 +1,39 @@
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">Export Vehicles</h5>
+    </div>
+    <div class="card-body">
+
+      <!-- Warning if email is not available -->
+      <div *ngIf="!email" class="alert alert-warning">
+        ⚠️ Please enter your email first to enable export.
+      </div>
+
+      <form [formGroup]="exportForm" (ngSubmit)="exportVehicles()">
+        <div class="mb-3">
+          <label for="minAge" class="form-label">Minimum Vehicle Age</label>
+          <input
+            id="minAge"
+            type="number"
+            formControlName="minAge"
+            class="form-control"
+            placeholder="Enter minimum vehicle age"
+          />
+          <div class="text-danger mt-1" *ngIf="exportForm.get('minAge')?.touched && exportForm.get('minAge')?.invalid">
+            Please enter a valid minimum age.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Exporting as</label>
+          <input type="text" class="form-control" [value]="email || ''" readonly />
+        </div>
+
+        <button class="btn btn-primary w-100" type="submit" [disabled]="isSubmitting || !email">
+          {{ isSubmitting ? 'Exporting...' : 'Start Export' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

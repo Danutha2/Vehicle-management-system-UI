@@ -1,0 +1,36 @@
+<div
+  class="modal fade show"
+  tabindex="-1"
+  role="dialog"
+  [ngClass]="{ show: showModal }"
+  [ngStyle]="{ display: showModal ? 'block' : 'none' }"
+>
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Welcome!</h5>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">Please enter your email to start receiving notifications.</p>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          class="form-control"
+          placeholder="Enter your email"
+          required
+        />
+      </div>
+      <div class="modal-footer">
+        <button
+          class="btn btn-primary w-100"
+          (click)="startConnection()"
+          [disabled]="!email"
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show" *ngIf="showModal"></div>

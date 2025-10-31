@@ -1,0 +1,273 @@
+<div class="container-fluid mt-4">
+  <div class="row mb-4">
+    <div class="col">
+      <h3>
+        <i class="bi bi-wrench"></i> Service Records Management
+      </h3>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <i class="bi bi-plus-circle"></i> Add New Record
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-funnel"></i> Filters</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Filter by VIN</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Enter VIN..." 
+            [(ngModel)]="filterVIN"
+            (input)="applyFilters()">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Date From</label>
+          <input 
+            type="date" 
+            class="form-control" 
+            [(ngModel)]="filterDateFrom"
+            (change)="applyFilters()">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Date To</label>
+          <input 
+            type="date" 
+            class="form-control" 
+            [(ngModel)]="filterDateTo"
+            (change)="applyFilters()">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button class="btn btn-secondary w-100" (click)="clearFilters()">
+            <i class="bi bi-x-circle"></i> Clear
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Records Table -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        All Service Records
+        <span class="badge bg-primary float-end">{{ filteredRecords.length }} records</span>
+      </h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>VIN</th>
+              <th>Vehicle</th>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Performed By</th>
+              <th width="200">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of filteredRecords">
+              <td>{{ record.id }}</td>
+              <td>
+                <strong>{{ record.vin }}</strong>
+              </td>
+              <td>
+                <span *ngIf="getVehicleInfo(record.vin) as vehicle">
+                  {{ vehicle.car_make }} {{ vehicle.car_model }}
+                </span>
+                <span *ngIf="!getVehicleInfo(record.vin)" class="text-muted">
+                  Unknown Vehicle
+                </span>
+              </td>
+              <td>{{ formatDate(record.date) }}</td>
+              <td>
+                <span class="text-truncate d-inline-block" style="max-width: 250px;" [title]="record.description">
+                  {{ record.description }}
+                </span>
+              </td>
+              <td>{{ record.performed_by }}</td>
+              <td>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button 
+                    class="btn btn-info" 
+                    (click)="openViewModal(record)"
+                    title="View">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button 
+                    class="btn btn-warning" 
+                    (click)="openEditModal(record)"
+                    title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    class="btn btn-danger" 
+                    (click)="deleteRecord(record)"
+                    title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredRecords.length === 0">
+              <td colspan="7" class="text-center text-muted py-4">
+                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                <p class="mt-2">No service records found</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" [class.bg-primary]="modalMode === 'create'" 
+           [class.bg-warning]="modalMode === 'edit'" 
+           [class.bg-info]="modalMode === 'view'"
+           [class.text-white]="modalMode !== 'view'">
+        <h5 class="modal-title">
+          <i class="bi" [class.bi-plus-circle]="modalMode === 'create'"
+             [class.bi-pencil]="modalMode === 'edit'"
+             [class.bi-eye]="modalMode === 'view'"></i>
+          {{ modalMode === 'create' ? 'Add New Service Record' : 
+             modalMode === 'edit' ? 'Edit Service Record' : 
+             'View Service Record' }}
+        </h5>
+        <button type="button" class="btn-close" [class.btn-close-white]="modalMode !== 'view'" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <!-- VIN Selection -->
+          <div class="mb-3">
+            <label class="form-label">
+              VIN <span class="text-danger">*</span>
+            </label>
+            <select 
+              class="form-select" 
+              [(ngModel)]="currentRecord.vin" 
+              name="vin"
+              [disabled]="modalMode === 'view' || (modalMode === 'edit')"
+              [class.is-invalid]="errors.vin">
+              <option value="">-- Select Vehicle --</option>
+              <option *ngFor="let v of vehicles" [value]="v.vin">
+                {{ v.vin }} - {{ v.car_make }} {{ v.car_model }} ({{ v.first_name }} {{ v.last_name }})
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="errors.vin">
+              {{ errors.vin }}
+            </div>
+            <small class="form-text text-muted">
+              Service records can only be added to existing vehicles
+            </small>
+          </div>
+
+          <!-- Selected Vehicle Info -->
+          <div *ngIf="currentRecord.vin && getVehicleInfo(currentRecord.vin) as vehicle" 
+               class="alert alert-info mb-3">
+            <strong>Selected Vehicle:</strong><br>
+            {{ vehicle.car_make }} {{ vehicle.car_model }} ({{ vehicle.manufactured_date }})<br>
+            <strong>Owner:</strong> {{ vehicle.first_name }} {{ vehicle.last_name }}<br>
+            <strong>Email:</strong> {{ vehicle.email }}
+          </div>
+
+          <!-- Date -->
+          <div class="mb-3">
+            <label class="form-label">
+              Service Date <span class="text-danger">*</span>
+            </label>
+            <input 
+              type="date" 
+              class="form-control" 
+              [(ngModel)]="currentRecord.date" 
+              name="date"
+              [disabled]="modalMode === 'view'"
+              [class.is-invalid]="errors.date">
+            <div class="invalid-feedback" *ngIf="errors.date">
+              {{ errors.date }}
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label class="form-label">
+              Description <span class="text-danger">*</span>
+            </label>
+            <textarea 
+              class="form-control" 
+              rows="4" 
+              [(ngModel)]="currentRecord.description" 
+              name="description"
+              [disabled]="modalMode === 'view'"
+              [class.is-invalid]="errors.description"
+              placeholder="Enter service description..."></textarea>
+            <div class="invalid-feedback" *ngIf="errors.description">
+              {{ errors.description }}
+            </div>
+          </div>
+
+          <!-- Performed By -->
+          <div class="mb-3">
+            <label class="form-label">
+              Performed By <span class="text-danger">*</span>
+            </label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="currentRecord.performed_by" 
+              name="performed_by"
+              [disabled]="modalMode === 'view'"
+              [class.is-invalid]="errors.performed_by"
+              placeholder="Enter technician name...">
+            <div class="invalid-feedback" *ngIf="errors.performed_by">
+              {{ errors.performed_by }}
+            </div>
+          </div>
+
+          <!-- Record ID (for edit/view) -->
+          <div *ngIf="modalMode !== 'create'" class="mb-3">
+            <label class="form-label">Record ID</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [value]="currentRecord.id" 
+              disabled>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">
+          {{ modalMode === 'view' ? 'Close' : 'Cancel' }}
+        </button>
+        <button 
+          *ngIf="modalMode !== 'view'" 
+          type="button" 
+          class="btn" 
+          [class.btn-primary]="modalMode === 'create'"
+          [class.btn-warning]="modalMode === 'edit'"
+          (click)="saveRecord()"
+          [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          {{ isSubmitting ? 'Saving...' : (modalMode === 'create' ? 'Create Record' : 'Update Record') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade" [class.show]="showModal" *ngIf="showModal"></div>

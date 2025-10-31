@@ -1,0 +1,8 @@
+/* Bootstrap handles most styling — just center overlay manually */
+.modal-backdrop {
+  z-index: 1040;
+}
+
+.modal {
+  z-index: 1050;
+}

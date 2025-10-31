@@ -1,0 +1,67 @@
+<!-- 🔹 Email Input Modal -->
+<div
+  class="modal fade show"
+  tabindex="-1"
+  role="dialog"
+  [ngClass]="{ show: showModal }"
+  [ngStyle]="{ display: showModal ? 'block' : 'none' }"
+>
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content shadow-lg border-0 rounded-3">
+      <div class="modal-header bg-primary text-white rounded-top-3">
+        <h5 class="modal-title fw-semibold">Welcome to Vehicle Management!</h5>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3 text-secondary">
+          Please enter your email to start receiving real-time notifications about imports, exports, and updates.
+        </p>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          class="form-control form-control-lg"
+          placeholder="Enter your email"
+          required
+        />
+      </div>
+      <div class="modal-footer border-0">
+        <button
+          class="btn btn-primary w-100 py-2 fw-semibold"
+          (click)="startConnection()"
+          [disabled]="!email"
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Optional Bootstrap backdrop -->
+<div class="modal-backdrop fade show" *ngIf="showModal"></div>
+
+<!-- 🔹 Toast-style Notifications -->
+<div
+  class="toast-container position-fixed top-0 end-0 p-3"
+  style="z-index: 1100;"
+>
+  <div
+    *ngFor="let note of notifications"
+    class="toast show align-items-center text-white bg-success shadow border-0 mb-2 rounded-3"
+    role="alert"
+  >
+    <div class="d-flex">
+      <div class="toast-body fw-medium">
+        {{ note.message }}
+        <div *ngIf="note.fileName" class="small text-light opacity-75">
+          File: {{ note.fileName }}
+        </div>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        aria-label="Close"
+        (click)="dismissNotification(note.id)"
+      ></button>
+    </div>
+  </div>
+</div>

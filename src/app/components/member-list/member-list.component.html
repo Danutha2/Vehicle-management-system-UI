@@ -1,0 +1,244 @@
+<div class="container-fluid px-4 py-4">
+  <!-- Header Card -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">
+        <i class="bi bi-car-front me-2"></i>
+        Vehicle Management
+      </h5>
+    </div>
+    <div class="card-body">
+      <!-- Search and Controls -->
+      <div class="row g-3 align-items-end">
+        <div class="col-md-6 col-lg-7">
+          <label class="form-label fw-semibold">
+            <i class="bi bi-search me-1"></i>
+            Search Vehicles
+          </label>
+          <div class="input-group">
+            <span class="input-group-text bg-white">
+              <i class="bi bi-funnel"></i>
+            </span>
+            <input
+              class="form-control"
+              placeholder="Search by model (use wildcard like M*)"
+              [value]="searchText()"
+              (input)="onSearchTextChange($any($event.target).value)"
+            />
+            <button class="btn btn-primary px-4" (click)="searchVehicles()">
+              <i class="bi bi-search me-1"></i>
+              Search
+            </button>
+          </div>
+          <small class="form-text text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            Use * as wildcard (e.g., "M*" for models starting with M)
+          </small>
+        </div>
+
+        <div class="col-md-3 col-lg-2">
+          <label class="form-label fw-semibold">
+            <i class="bi bi-list-ol me-1"></i>
+            Rows per page
+          </label>
+          <input
+            type="number"
+            min="1"
+            max="100"
+            class="form-control"
+            [value]="pageSize()"
+            (input)="onPageSizeChange($any($event.target).value)"
+          />
+        </div>
+
+        <div class="col-md-3 col-lg-3 text-md-end">
+          <div class="badge bg-info text-dark fs-6 p-2">
+            <i class="bi bi-database me-1"></i>
+            Total: {{ total() }} vehicles
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0 align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th><i class="bi bi-person me-1"></i>First Name</th>
+              <th><i class="bi bi-person me-1"></i>Last Name</th>
+              <th><i class="bi bi-envelope me-1"></i>Email</th>
+              <th><i class="bi bi-building me-1"></i>Car Make</th>
+              <th><i class="bi bi-car-front me-1"></i>Car Model</th>
+              <th><i class="bi bi-upc me-1"></i>VIN</th>
+              <th><i class="bi bi-calendar me-1"></i>Manufactured</th>
+              <th><i class="bi bi-speedometer me-1"></i>Age</th>
+              <th class="text-center"><i class="bi bi-gear me-1"></i>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of vehicles(); trackBy: trackById" class="vehicle-row">
+              <!-- Normal (non-editing) mode -->
+              <ng-container *ngIf="editingVin() !== v.vin; else editMode">
+                <td class="fw-medium">{{ v.first_name }}</td>
+                <td class="fw-medium">{{ v.last_name }}</td>
+                <td>
+                  <small class="text-muted">
+                    <i class="bi bi-envelope-fill me-1"></i>
+                    {{ v.email }}
+                  </small>
+                </td>
+                <td>
+                  <span class="badge bg-secondary">{{ v.car_make }}</span>
+                </td>
+                <td>
+                  <span class="badge bg-info text-dark">{{ v.car_model }}</span>
+                </td>
+              </ng-container>
+
+              <!-- Edit mode -->
+              <ng-template #editMode>
+                <td>
+                  <input
+                    [value]="editData().first_name"
+                    (input)="updateEditField('first_name', $any($event.target).value)"
+                    class="form-control form-control-sm"
+                    placeholder="First name"
+                  />
+                </td>
+                <td>
+                  <input
+                    [value]="editData().last_name"
+                    (input)="updateEditField('last_name', $any($event.target).value)"
+                    class="form-control form-control-sm"
+                    placeholder="Last name"
+                  />
+                </td>
+                <td>
+                  <small class="text-muted">
+                    <i class="bi bi-lock-fill me-1"></i>
+                    {{ v.email }}
+                  </small>
+                </td>
+                <td>
+                  <input
+                    [value]="editData().car_make"
+                    (input)="updateEditField('car_make', $any($event.target).value)"
+                    class="form-control form-control-sm"
+                    placeholder="Car make"
+                  />
+                </td>
+                <td>
+                  <input
+                    [value]="editData().car_model"
+                    (input)="updateEditField('car_model', $any($event.target).value)"
+                    class="form-control form-control-sm"
+                    placeholder="Car model"
+                  />
+                </td>
+              </ng-template>
+
+              <td>
+                <code class="text-primary">{{ v.vin }}</code>
+              </td>
+              <td>
+                <small>{{ v.manufactured_date | date:'MMM d, y' }}</small>
+              </td>
+              <td>
+                <span class="badge rounded-pill" 
+                      [ngClass]="{
+                        'bg-success': v.age_of_vehicle < 5,
+                        'bg-warning text-dark': v.age_of_vehicle >= 5 && v.age_of_vehicle < 10,
+                        'bg-danger': v.age_of_vehicle >= 10
+                      }">
+                  {{ v.age_of_vehicle }} years
+                </span>
+              </td>
+
+              <td class="text-center">
+                <div class="btn-group btn-group-sm" role="group">
+                  <ng-container *ngIf="editingVin() !== v.vin; else saveCancel">
+                    <button 
+                      class="btn btn-outline-warning" 
+                      (click)="startEdit(v)"
+                      title="Edit vehicle">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button 
+                      class="btn btn-outline-danger" 
+                      (click)="deleteVehicle(v.id)"
+                      title="Delete vehicle">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </ng-container>
+
+                  <ng-template #saveCancel>
+                    <button 
+                      class="btn btn-success" 
+                      (click)="saveEdit()"
+                      title="Save changes">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                    <button 
+                      class="btn btn-secondary" 
+                      (click)="cancelEdit()"
+                      title="Cancel editing">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </ng-template>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Empty state -->
+            <tr *ngIf="vehicles().length === 0">
+              <td colspan="9" class="text-center py-5">
+                <div class="text-muted">
+                  <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                  <h5>No vehicles found</h5>
+                  <p>Try adjusting your search criteria</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div class="card-footer bg-light">
+      <div class="row align-items-center">
+        <div class="col-md-4">
+          <button 
+            class="btn btn-outline-primary" 
+            (click)="prevPage()" 
+            [disabled]="page() === 1">
+            <i class="bi bi-chevron-left me-1"></i>
+            Previous
+          </button>
+        </div>
+        <div class="col-md-4 text-center">
+          <span class="badge bg-primary fs-6 px-3 py-2">
+            <i class="bi bi-file-earmark-text me-1"></i>
+            Page {{ page() }}
+          </span>
+          <div class="small text-muted mt-1">
+            Showing {{ (page() - 1) * pageSize() + 1 }} - {{ page() * pageSize() > total() ? total() : page() * pageSize() }} of {{ total() }}
+          </div>
+        </div>
+        <div class="col-md-4 text-end">
+          <button 
+            class="btn btn-outline-primary" 
+            (click)="nextPage()" 
+            [disabled]="page() * pageSize() >= total()">
+            Next
+            <i class="bi bi-chevron-right ms-1"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
