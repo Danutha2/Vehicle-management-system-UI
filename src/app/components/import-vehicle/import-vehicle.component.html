@@ -24,17 +24,4 @@
       {{ uploading ? 'Uploading...' : 'Upload' }}
     </button>
   </div>
-
-  <!-- Message Alert -->
-  <div
-    *ngIf="message"
-    class="alert mt-3 text-center"
-    [ngClass]="{
-      'alert-success': message.startsWith('✅'),
-      'alert-danger': message.startsWith('❌'),
-      'alert-warning': message.startsWith('⚠️')
-    }"
-  >
-    {{ message }}
-  </div>
 </div>
