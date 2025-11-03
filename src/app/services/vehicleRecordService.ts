@@ -2,34 +2,21 @@ import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { GET_ALL_VEHICLE_INFO, GET_VEHICLE_INFO_BY_VIN } from './graphql-queries/vehicleInfo';
+import { CREATE_VEHICLE_RECORD, DELETE_VEHICLE_RECORD, GET_ALL_VEHICLE_RECORDS, GET_VEHICLE_RECORD_BY_ID, UPDATE_VEHICLE_RECORD } from './graphql-queries/vehicleServiceRecord';
 
 @Injectable({
   providedIn: 'root'
 })
-export class VehicleRecordService {
+export class VehicleRecordService { 
   constructor(private apollo: Apollo) { }
-
-  // ==================== VEHICLE OPERATIONS ====================
 
   /**
    * Fetch all vehicles with basic information for dropdown
    */
   getAllVehicles(): Observable<any[]> {
     return this.apollo.watchQuery<any>({
-      query: gql`
-        query AllVehicles {
-          allVehicleInfo {
-            vin
-            car_make
-            car_model
-            first_name
-            last_name
-            email
-            manufactured_date
-            age_of_vehicle
-          }
-        }
-      `,
+      query: GET_ALL_VEHICLE_INFO,
       fetchPolicy: 'network-only'
     }).valueChanges.pipe(
       map(res => res.data.allVehicleInfo)
@@ -42,26 +29,7 @@ export class VehicleRecordService {
    */
   getVehicleByVIN(vin: string): Observable<any> {
     return this.apollo.query<any>({
-      query: gql`
-        query VehicleByVIN($vin: String!) {
-          vehicleInfo(vin: $vin) {
-            vin
-            car_make
-            car_model
-            first_name
-            last_name
-            email
-            manufactured_date
-            age_of_vehicle
-            serviceRecord {
-              id
-              date
-              description
-              performed_by
-            }
-          }
-        }
-      `,
+      query: GET_VEHICLE_INFO_BY_VIN,
       variables: { vin },
       fetchPolicy: 'network-only'
     }).pipe(
@@ -122,17 +90,7 @@ export class VehicleRecordService {
    */
   getAllRecords(): Observable<any> {
     return this.apollo.watchQuery<any>({
-      query: gql`
-        query VehicleRecords {
-          vehicleRecords {
-            id
-            vin
-            date
-            description
-            performed_by
-          }
-        }
-      `,
+      query: GET_ALL_VEHICLE_RECORDS,
       fetchPolicy: 'network-only'
     }).valueChanges;
   }
@@ -142,17 +100,7 @@ export class VehicleRecordService {
    */
   getRecordById(id: number): Observable<any> {
     return this.apollo.watchQuery<any>({
-      query: gql`
-        query VehicleRecordById($id: Int!) {
-          vehicleRecordById(id: $id) {
-            id
-            vin
-            date
-            description
-            performed_by
-          }
-        }
-      `,
+      query: GET_VEHICLE_RECORD_BY_ID,
       variables: { id },
       fetchPolicy: 'network-only'
     }).valueChanges;
@@ -164,17 +112,7 @@ export class VehicleRecordService {
    */
   createRecord(recordInput: any): Observable<any> {
     return this.apollo.mutate({
-      mutation: gql`
-        mutation CreateVehicleRecord($createVehicleRecordInput: CreateVehicleRecordInput!) {
-          createVehicleRecord(createVehicleRecordInput: $createVehicleRecordInput) {
-            id
-            vin
-            date
-            description
-            performed_by
-          }
-        }
-      `,
+      mutation: CREATE_VEHICLE_RECORD,
       variables: { createVehicleRecordInput: recordInput },
       refetchQueries: ['VehicleRecords']
     });
@@ -186,17 +124,7 @@ export class VehicleRecordService {
    */
   updateRecord(recordInput: any): Observable<any> {
     return this.apollo.mutate({
-      mutation: gql`
-        mutation UpdateVehicleRecord($updateVehicleRecordInput: UpdateVehicleRecordInput!) {
-          updateVehicleRecord(updateVehicleRecordInput: $updateVehicleRecordInput) {
-            id
-            vin
-            date
-            description
-            performed_by
-          }
-        }
-      `,
+      mutation: UPDATE_VEHICLE_RECORD,
       variables: { updateVehicleRecordInput: recordInput },
       refetchQueries: ['VehicleRecords']
     });
@@ -208,11 +136,7 @@ export class VehicleRecordService {
    */
   deleteRecord(id: number): Observable<any> {
     return this.apollo.mutate({
-      mutation: gql`
-        mutation RemoveVehicleRecord($id: Int!) {
-          removeVehicleRecord(id: $id)
-        }
-      `,
+      mutation:DELETE_VEHICLE_RECORD,
       variables: { id },
       refetchQueries: ['VehicleRecords']
     });
@@ -223,18 +147,7 @@ export class VehicleRecordService {
    */
   getServiceRecordsByVIN(vin: string): Observable<any[]> {
     return this.apollo.query<any>({
-      query: gql`
-        query ServiceRecordsByVIN($vin: String!) {
-          vehicleInfo(vin: $vin) {
-            serviceRecord {
-              id
-              date
-              description
-              performed_by
-            }
-          }
-        }
-      `,
+      query: GET_VEHICLE_INFO_BY_VIN,
       variables: { vin },
       fetchPolicy: 'network-only'
     }).pipe(
@@ -251,3 +164,4 @@ export class VehicleRecordService {
     );
   }
 }
+

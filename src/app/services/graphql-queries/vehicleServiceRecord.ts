@@ -12,7 +12,6 @@ export const GET_ALL_VEHICLE_RECORDS = gql`
   }
 `;
 
-// Get a single record by ID
 export const GET_VEHICLE_RECORD_BY_ID = gql`
   query VehicleRecordById($id: Int!) {
     vehicleRecordById(id: $id) {
@@ -25,7 +24,6 @@ export const GET_VEHICLE_RECORD_BY_ID = gql`
   }
 `;
 
-// Create a new service record
 export const CREATE_VEHICLE_RECORD = gql`
   mutation CreateVehicleRecord($createVehicleRecordInput: CreateVehicleRecordInput!) {
     createVehicleRecord(createVehicleRecordInput: $createVehicleRecordInput) {
@@ -38,7 +36,6 @@ export const CREATE_VEHICLE_RECORD = gql`
   }
 `;
 
-// Update an existing service record
 export const UPDATE_VEHICLE_RECORD = gql`
   mutation UpdateVehicleRecord($updateVehicleRecordInput: UpdateVehicleRecordInput!) {
     updateVehicleRecord(updateVehicleRecordInput: $updateVehicleRecordInput) {
@@ -51,7 +48,6 @@ export const UPDATE_VEHICLE_RECORD = gql`
   }
 `;
 
-// Remove a service record by ID
 export const DELETE_VEHICLE_RECORD = gql`
   mutation RemoveVehicleRecord($id: Int!) {
     removeVehicleRecord(id: $id)
@@ -59,7 +55,6 @@ export const DELETE_VEHICLE_RECORD = gql`
 `;
 
 
-// ✅ Get specific vehicle info + its related service records by VIN
 export const GET_VEHICLE_INFO_BY_VIN = gql`
   query VehicleInfo($vin: String!) {
     vehicleInfo(vin: $vin) {
@@ -83,7 +78,6 @@ export const GET_VEHICLE_INFO_BY_VIN = gql`
   }
 `;
 
-// ✅ Get all vehicles (for dropdown or list)
 export const GET_ALL_VEHICLE_INFO = gql`
   query AllVehicleInfo {
     allVehicleInfo {
@@ -99,3 +93,5 @@ export const GET_ALL_VEHICLE_INFO = gql`
     }
   }
 `;
+
+
